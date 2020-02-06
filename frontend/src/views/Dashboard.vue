@@ -231,7 +231,7 @@ export default {
     },
     getMore(event) {
       this.rec += 5;
-      this.reload();
+      this.getRecentTrades().then(data => this.preprocess(data));
     },
     reload() {
       this.getTotalDebt();

@@ -108,10 +108,12 @@ class GetStats(Resource):
             req_parser = reqparse.RequestParser()
             req_parser.add_argument('cnum', type=int)
             req_parser.add_argument('dnum', type=int)
+            req_parser.add_argument('date', type=int)
             req_args = req_parser.parse_args()
 
             cnum = req_args['cnum']
             dnum = req_args['dnum']
+            date = req_args['date']
 
             session = SESSION()
 

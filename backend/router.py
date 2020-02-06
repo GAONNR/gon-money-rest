@@ -1,5 +1,6 @@
 import database
 
+from sqlalchemy import text
 from sqlalchemy.sql import func
 from flask_restful import (Resource, reqparse)
 from database import (User, Trade)
@@ -102,4 +103,33 @@ class GetTrade(Resource):
 
 
 class GetStats(Resource):
-    NotImplemented
+    def get(self):
+        try:
+            req_parser = reqparse.RequestParser()
+            req_parser.add_argument('cnum', type=int)
+            req_parser.add_argument('dnum', type=int)
+            req_args = req_parser.parse_args()
+
+            cnum = req_args['cnum']
+            dnum = req_args['dnum']
+
+            session = SESSION()
+
+            if cnum:
+                ranking = session.query(Trade.eul_uid,
+                                        func.sum(Trade.reduce_price).label('sum'))\
+                    .filter_by(completed=False)\
+                    .group_by(Trade.eul_uid)\
+                    .order_by(text('sum desc'))\
+                    .limit(cnum)
+                return [{'uid': rank[0], 'sum': rank[1]} for rank in ranking]
+            elif dnum:
+                ranking = session.query(Trade.gab_uid,
+                                        func.sum(Trade.reduce_price).label('sum'))\
+                    .filter_by(completed=False)\
+                    .group_by(Trade.gab_uid)\
+                    .order_by(text('sum desc'))\
+                    .limit(dnum)
+                return [{'uid': rank[0], 'sum': rank[1]} for rank in ranking]
+        except Exception as e:
+            return {'error': str(e)}

@@ -17,30 +17,27 @@
       </v-flex>
       -->
       <v-flex md12 lg12>
-        <material-card
-          color="red"
-          :title="`최근 ${rec}건의 거래`"
-          text="유지보수 지원자 받습니다."
-        >
+        <material-card color="red" :title="`최근 ${rec}건의 거래`" text="유지보수 지원자 받습니다.">
           <v-data-table :headers="headers" :items="debts" hide-actions>
             <template slot="headerCell" slot-scope="{ header }">
-              <span
-                class="font-weight-light text-warning text--darken-3"
-                v-text="header.text"
-              />
+              <span class="font-weight-light text-warning text--darken-3" v-text="header.text" />
             </template>
             <template slot="items" slot-scope="{ index, item }">
               <td class="text-xs-right">{{ item.no }}</td>
               <td>{{ item.content }}</td>
               <td>
-                <router-link :to="`/user-profile?uid=${item.gab_uid}`">{{
+                <router-link :to="`/user-profile?uid=${item.gab_uid}`">
+                  {{
                   item.debtor
-                }}</router-link>
+                  }}
+                </router-link>
               </td>
               <td>
-                <router-link :to="`/user-profile?uid=${item.eul_uid}`">{{
+                <router-link :to="`/user-profile?uid=${item.eul_uid}`">
+                  {{
                   item.creditor
-                }}</router-link>
+                  }}
+                </router-link>
               </td>
               <td class="text-xs-right">{{ item.reduce_price }}</td>
               <td class="text-xs-right">{{ item.date }}</td>
@@ -48,6 +45,46 @@
             </template>
           </v-data-table>
           <p style="text-align: center;" v-on:click="getMore">더보기</p>
+        </material-card>
+      </v-flex>
+      <v-flex md6 lg6>
+        <material-card color="green" title="호갱 랭킹" text="호-호-">
+          <v-data-table :headers="statHeaders" :items="topCreditors" hide-actions>
+            <template slot="headerCell" slot-scope="{ header }">
+              <span class="font-weght-light text-warning text--darken-3" v-text="header.text"></span>
+            </template>
+            <template slot="items" slot-scope="{ index, item }">
+              <td class="text-xs-right">{{ index + 1 }}</td>
+              <td>
+                <router-link :to="`/user-profile?uid=${item.uid}`">
+                  {{
+                  item.nick
+                  }}
+                </router-link>
+              </td>
+              <td class="text-xs-right">{{ item.sum }}</td>
+            </template>
+          </v-data-table>
+        </material-card>
+      </v-flex>
+      <v-flex md6 lg6>
+        <material-card color="purple" title="나쁜놈 랭킹" text="제발 좀 갚아!!!">
+          <v-data-table :headers="statHeaders" :items="topDebtors" hide-actions>
+            <template slot="headerCell" slot-scope="{ header }">
+              <span class="font-weght-light text-warning text--darken-3" v-text="header.text"></span>
+            </template>
+            <template slot="items" slot-scope="{ index, item }">
+              <td class="text-xs-right">{{ index + 1 }}</td>
+              <td>
+                <router-link :to="`/user-profile?uid=${item.uid}`">
+                  {{
+                  item.nick
+                  }}
+                </router-link>
+              </td>
+              <td class="text-xs-right">{{ item.sum }}</td>
+            </template>
+          </v-data-table>
         </material-card>
       </v-flex>
     </v-layout>
@@ -100,7 +137,28 @@ export default {
           value: 'account'
         }
       ],
-      debts: []
+      debts: [],
+      statHeaders: [
+        {
+          sortable: false,
+          text: '순위',
+          value: 'num',
+          align: 'right'
+        },
+        {
+          sortable: false,
+          text: '닉네임',
+          value: 'nickname'
+        },
+        {
+          sortable: false,
+          text: '금액',
+          value: 'amount',
+          align: 'right'
+        }
+      ],
+      topCreditors: [],
+      topDebtors: []
     };
   },
   methods: {
@@ -123,6 +181,12 @@ export default {
         .catch(err => {
           console.log(err);
         });
+    },
+    getTops(type, cnum) {
+      return this.$http
+        .get(`/api/stats?${type}num=${cnum}`)
+        .then(res => res.data)
+        .catch(err => console.log(err));
     },
     preprocess(rawDebts) {
       rawDebts.forEach((el, idx) => {
@@ -150,6 +214,21 @@ export default {
           });
       });
     },
+    preprocessStats(rawStats, arg) {
+      rawStats.forEach((el, idx) => {
+        this.$http
+          .get(`/api/user?uid=${el.uid}`)
+          .then(res => {
+            el.nick = res.data.nick;
+            return el;
+          })
+          .then(el => {
+            arg.push(el);
+            arg.sort((a, b) => Number(b.sum) - Number(a.sum));
+          })
+          .catch(err => err);
+      });
+    },
     getMore(event) {
       this.rec += 5;
       this.reload();
@@ -157,6 +236,12 @@ export default {
     reload() {
       this.getTotalDebt();
       this.getRecentTrades().then(data => this.preprocess(data));
+      this.getTops('c', 10).then(data =>
+        this.preprocessStats(data, this.topCreditors)
+      );
+      this.getTops('d', 10).then(data =>
+        this.preprocessStats(data, this.topDebtors)
+      );
     }
   },
   mounted() {

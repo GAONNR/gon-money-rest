@@ -1,5 +1,6 @@
 export default {
   drawer: null,
   color: 'success',
-  image: 'https://demos.creative-tim.com/vue-material-dashboard/img/sidebar-2.32103624.jpg'
-}
+  image:
+    'https://i.pinimg.com/originals/ed/fa/11/edfa111afe3a6169b4ea4777e6976b25.jpg'
+};

@@ -90,7 +90,7 @@ class Trade(Base):
 
 
 def get_engine(db_path):
-    return db.create_engine('sqlite:///%s' % db_path)
+    return db.create_engine('sqlite:///%s' % db_path, connect_args={'check_same_thread': False})
 
 
 def db_connect(db_path):

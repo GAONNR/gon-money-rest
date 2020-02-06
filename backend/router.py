@@ -3,9 +3,7 @@ import database
 from sqlalchemy import text
 from sqlalchemy.sql import func
 from flask_restful import (Resource, reqparse)
-from database import (User, Trade)
-
-SESSION = database.db_connect('../db/money.db')
+from database import (User, Trade, db_connect)
 
 
 def intify(x): return x if x else 0
@@ -25,7 +23,7 @@ class GetUser(Resource):
 
             uid = req_args['uid']
 
-            session = SESSION()
+            session = db_connect('../db/money.db')()
 
             if uid is None:
                 all_users = session.query(User).all()
@@ -54,7 +52,7 @@ class GetTrade(Resource):
             rec = req_args['rec']
             dead = req_args['dead']
 
-            session = SESSION()
+            session = db_connect('../db/money.db')()
 
             if tid:
                 trade = session.query(Trade).filter_by(no=tid).first()
@@ -115,7 +113,7 @@ class GetStats(Resource):
             dnum = req_args['dnum']
             date = req_args['date']
 
-            session = SESSION()
+            session = db_connect('../db/money.db')()
 
             if cnum:
                 ranking = session.query(Trade.eul_uid,

@@ -85,10 +85,10 @@ export default {
   data: () => ({
     colors: ['primary', 'info', 'success', 'warning', 'danger'],
     images: [
-      'https://i.pinimg.com/originals/ed/fa/11/edfa111afe3a6169b4ea4777e6976b25.jpg',
-      'https://i.pinimg.com/originals/ed/fa/11/edfa111afe3a6169b4ea4777e6976b25.jpg',
-      'https://i.pinimg.com/originals/ed/fa/11/edfa111afe3a6169b4ea4777e6976b25.jpg',
-      'https://i.pinimg.com/originals/ed/fa/11/edfa111afe3a6169b4ea4777e6976b25.jpg'
+      'https://i.imgur.com/q3MYpgP.jpg',
+      'https://i.imgur.com/q3MYpgP.jpg',
+      'https://i.imgur.com/q3MYpgP.jpg',
+      'https://i.imgur.com/q3MYpgP.jpg'
     ]
   }),
 

@@ -54,6 +54,11 @@ export default {
         to: '/',
         icon: 'mdi-view-dashboard',
         text: 'Dashboard'
+      },
+      {
+        to: '/user-profile',
+        icon: 'mdi-account',
+        text: 'User Profile'
       }
     ]
   }),
@@ -74,6 +79,12 @@ export default {
 
   methods: {
     ...mapMutations('app', ['setDrawer', 'toggleDrawer'])
+  },
+
+  mounted() {
+    if (this.$route.query.uid) {
+      this.links[1].to = `/user-profile?uid=${this.$route.query.uid}`;
+    }
   }
 };
 </script>

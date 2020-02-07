@@ -28,18 +28,17 @@
         <material-card color="pink" title="Debts" text="돈을 제때제때 갚읍시다">
           <v-data-table :headers="debtHeaders" :items="debts" hide-actions>
             <template slot="headerCell" slot-scope="{ header }">
-              <span
-                class="font-weight-light text-warning text--darken-3"
-                v-text="header.text"
-              />
+              <span class="font-weight-light text-warning text--darken-3" v-text="header.text" />
             </template>
             <template slot="items" slot-scope="{ index, item }">
               <td class="text-xs-right">{{ item.no }}</td>
               <td>{{ item.content }}</td>
               <td>
-                <router-link :to="`/user-profile?uid=${item.eul_uid}`">{{
+                <router-link :to="`/user-profile?uid=${item.eul_uid}`">
+                  {{
                   item.creditor
-                }}</router-link>
+                  }}
+                </router-link>
               </td>
               <td class="text-xs-right">{{ item.reduce_price }}</td>
               <td class="text-xs-right">{{ item.date }}</td>
@@ -49,25 +48,20 @@
         </material-card>
       </v-flex>
       <v-flex md12 lg12>
-        <material-card
-          color="blue"
-          title="Credits"
-          text="돈을 제때제때 갚읍시다"
-        >
+        <material-card color="blue" title="Credits" text="돈을 제때제때 갚읍시다">
           <v-data-table :headers="creditHeaders" :items="credits" hide-actions>
             <template slot="headerCell" slot-scope="{ header }">
-              <span
-                class="font-weight-light text-warning text--darken-3"
-                v-text="header.text"
-              />
+              <span class="font-weight-light text-warning text--darken-3" v-text="header.text" />
             </template>
             <template slot="items" slot-scope="{ index, item }">
               <td class="text-xs-right">{{ item.no }}</td>
               <td>{{ item.content }}</td>
               <td>
-                <router-link :to="`/user-profile?uid=${item.gab_uid}`">{{
+                <router-link :to="`/user-profile?uid=${item.gab_uid}`">
+                  {{
                   item.debtor
-                }}</router-link>
+                  }}
+                </router-link>
               </td>
               <td class="text-xs-right">{{ item.reduce_price }}</td>
               <td class="text-xs-right">{{ item.date }}</td>
@@ -164,7 +158,8 @@ export default {
         }
       ],
       credits: [],
-      debts: []
+      debts: [],
+      users: {}
     };
   },
   methods: {
@@ -204,38 +199,39 @@ export default {
           console.log(err);
         });
     },
-    preprocess(raws, processed) {
-      console.log(raws);
-      raws.forEach((el, idx) => {
+    getUsers() {
+      return new Promise((resolve, reject) => {
         this.$http
-          .get(`/api/user?uid=${el.eul_uid}`)
+          .get('/api/user')
           .then(res => {
-            el.creditor = res.data.nick;
-            return el;
+            res.data.forEach(e => {
+              this.users[e.uid] = e;
+            });
+            return resolve(this.users);
           })
-          .then(el => {
-            this.$http
-              .get(`/api/user?uid=${el.gab_uid}`)
-              .then(res => {
-                el.debtor = res.data.nick;
-                return el;
-              })
-              .then(el => {
-                processed.push(el);
-                processed.sort((a, b) => Number(b.no) - Number(a.no));
-                // TODO: optimization
-              });
-          })
-          .catch(err => {
-            return err;
-          });
+          .catch(err => console.log(err));
       });
+    },
+    preprocess(raws, processed) {
+      raws.forEach((el, idx) => {
+        el.creditor = this.users[el.eul_uid].nick;
+        el.debtor = this.users[el.gab_uid].nick;
+        processed.push(el);
+      });
+    },
+    getInfos() {
+      this.getDebts().then(data => this.preprocess(data, this.debts));
+      this.getCredits().then(data => this.preprocess(data, this.credits));
+    }
+  },
+  beforeCreate() {
+    if (!this.$route.query.uid) {
+      this.$router.push('/');
     }
   },
   mounted() {
     this.getUsername();
-    this.getDebts().then(data => this.preprocess(data, this.debts));
-    this.getCredits().then(data => this.preprocess(data, this.credits));
+    this.getUsers().then(() => this.getInfos());
   }
 };
 </script>

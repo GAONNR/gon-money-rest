@@ -158,7 +158,8 @@ export default {
         }
       ],
       topCreditors: [],
-      topDebtors: []
+      topDebtors: [],
+      users: {}
     };
   },
   methods: {
@@ -188,53 +189,38 @@ export default {
         .then(res => res.data)
         .catch(err => console.log(err));
     },
+    getUsers() {
+      return new Promise((resolve, reject) => {
+        this.$http
+          .get('/api/user')
+          .then(res => {
+            res.data.forEach(e => {
+              this.users[e.uid] = e;
+            });
+            return resolve(this.users);
+          })
+          .catch(err => console.log(err));
+      });
+    },
     preprocess(rawDebts) {
       rawDebts.forEach((el, idx) => {
-        this.$http
-          .get(`/api/user?uid=${el.eul_uid}`)
-          .then(res => {
-            el.creditor = res.data.nick;
-            return el;
-          })
-          .then(el => {
-            this.$http
-              .get(`/api/user?uid=${el.gab_uid}`)
-              .then(res => {
-                el.debtor = res.data.nick;
-                return el;
-              })
-              .then(el => {
-                this.debts.push(el);
-                this.debts.sort((a, b) => Number(b.no) - Number(a.no));
-                // TODO: optimization
-              });
-          })
-          .catch(err => {
-            return err;
-          });
+        el.creditor = this.users[el.eul_uid].nick;
+        el.debtor = this.users[el.gab_uid].nick;
+        this.debts.push(el);
       });
     },
     preprocessStats(rawStats, arg) {
       rawStats.forEach((el, idx) => {
-        this.$http
-          .get(`/api/user?uid=${el.uid}`)
-          .then(res => {
-            el.nick = res.data.nick;
-            return el;
-          })
-          .then(el => {
-            arg.push(el);
-            arg.sort((a, b) => Number(b.sum) - Number(a.sum));
-          })
-          .catch(err => err);
+        el.nick = this.users[el.uid].nick;
+        arg.push(el);
       });
+      // arg.sort((a, b) => Number(b.sum) - Number(a.sum));
     },
     getMore(event) {
       this.rec += 5;
       this.getRecentTrades().then(data => this.preprocess(data));
     },
-    reload() {
-      this.getTotalDebt();
+    getInfos() {
       this.getRecentTrades().then(data => this.preprocess(data));
       this.getTops('c', 10).then(data =>
         this.preprocessStats(data, this.topCreditors)
@@ -242,10 +228,14 @@ export default {
       this.getTops('d', 10).then(data =>
         this.preprocessStats(data, this.topDebtors)
       );
+    },
+    load() {
+      this.getTotalDebt();
+      this.getUsers().then(() => this.getInfos());
     }
   },
   mounted() {
-    this.reload();
+    this.load();
   }
 };
 </script>

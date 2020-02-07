@@ -95,7 +95,7 @@ def get_engine(db_path):
 
 def db_connect(db_path):
     Session = sessionmaker(bind=get_engine(db_path))
-    logger.info('Connected to database')
+    # logger.info('Connected to database')
     return Session
 
 
